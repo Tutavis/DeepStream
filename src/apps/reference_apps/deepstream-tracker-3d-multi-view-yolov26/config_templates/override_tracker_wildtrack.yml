@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# config_tracker.yml's default minPoseConfidence (0.925) was tuned against the
+# synthetic warehouse dataset's clean renders. On the WILDTRACK dataset (real,
+# compressed photographic footage), BodyPose3DNet's pose confidence essentially
+# never clears that bar: an unmodified run against the real Cam1-7.mp4 videos
+# produced 0/14224 confirmed tracker-kitti-dump frames despite raw detections
+# occurring in ~14% of frames.
+#
+# Swept on a 10s/600-frame smoke clip (7 cams):
+#   0.925 (default) -> 0/4200 confirmed frames
+#   0.3             -> 0/4200 confirmed frames
+#   0.1             -> 121/4200 confirmed frames, 7 unique track IDs
+#   0.0 (disabled)  -> 77/4200 confirmed frames, 1 unique track ID
+# Note 0.1 > 0.0's confirmed-frame count despite being a *stricter* gate --
+# these smoke-clip numbers have real run-to-run noise (short clip, live
+# display sink), so treat 0.1 as a verified-working starting point, NOT a
+# precisely tuned value. Sweep properly against
+# datasets/wildtrack_7cam/annotations_positions/ ground truth once an
+# IDF1/MOTA scoring script exists.
+#
+# cameraModelFilepath is intentionally left empty: deepstream_auto_configurator.py
+# repopulates it after applying overrides, based on the actual dataset's camInfo
+# files -- see the "cameraModelFilepath:" handling in generate_tracker_config().
+ObjectModelProjection:
+  minPoseConfidence: 0.1
+  outputFootLocation: 1
+  outputVisibility: 1
+  outputConvexHull: 0
+  cameraModelFilepath: []
+  objectModelType: 0
